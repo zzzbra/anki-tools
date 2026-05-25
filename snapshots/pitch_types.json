@@ -1,0 +1,194 @@
+[
+  {
+    "noteId": 1779335292742,
+    "modelName": "Pitch Type",
+    "tags": [],
+    "mod": 1779483387,
+    "fields": {
+      "Name": "Four-seam fastball",
+      "Category": "Fastball",
+      "Velocity": "Baseline (fastest)",
+      "Spin": "High backspin",
+      "HandAtRelease": "Behind ball, neutral<br><img src=\"paste-b0f234aaa492a2eba8a751216e32e7b48a4565fa.jpg\">",
+      "Movement": "“Rising” / straight, stays up<br><img alt=\"four seam fastball pitch diagram\" src=\"four_seam_fastball.svg\">",
+      "Deception": "Pure velocity, gets on hitter fast",
+      "Extra": ""
+    }
+  },
+  {
+    "noteId": 1779335292749,
+    "modelName": "Pitch Type",
+    "tags": [],
+    "mod": 1779485627,
+    "fields": {
+      "Name": "Sinker / two-seam",
+      "Category": "Fastball",
+      "Velocity": "~1–3 mph slower",
+      "Spin": "High, tilted axis",
+      "HandAtRelease": "Behind ball, slight pronation<br><img src=\"paste-209e192551da189c4b99dd671600c97b57868560.jpg\">",
+      "Movement": "Arm-side run + sink<br><img alt=\"two seam fastball pitch diagram\" src=\"two_seam_fastball.svg\">",
+      "Deception": "Velocity plus ground-ball movement<br><div>\"Ground-ball movement\" refers to the kind of pitch movement that tends to produce ground balls when the hitter makes contact — and a sinker is the classic example.</div><div>The mechanism is about where the bat meets the ball. A sinker has arm-side run and&nbsp;<em>sink</em>&nbsp;— it drops more than a four-seam fastball over the last several feet. The hitter, expecting the ball to stay on a flatter plane, swings on a slightly higher path than where the ball actually ends up. The bat catches the top half of the ball rather than squaring it up. Hitting the top half drives the ball downward into the dirt — a ground ball. Contrast a four-seamer, which \"stays up\" relative to expectation and tends to get hit in the air (fly balls, line drives) or fouled straight back.</div><div>So \"ground-ball movement\" is shorthand for: late downward action that makes hitters mishit the ball on top. Pitchers and analysts care about this because ground balls are low-risk outcomes — a grounder almost never becomes an extra-base hit and frequently becomes a double play, whereas balls in the air carry home-run and gap-double risk. This is why a pitcher's ground-ball rate (GB%) is a tracked stat, and why \"sinker/groundball pitcher\" is a recognized archetype — Brandon Webb and Dallas Keuchel are textbook cases, both of whom built careers on inducing weak contact into the ground rather than missing bats.</div><div>It connects to the spin discussion from earlier, too. A sinker's sink comes partly from a spin axis tilted away from pure backspin, so it generates less of the lift that holds a four-seamer up. Less backspin lift means more drop, more drop means more top-half contact, and that means grounders.</div>",
+      "Extra": "<div><br></div><div><div><div><div><div><div><div><div><div></div></div></div><div><div><div><div><div></div></div></div><div></div></div></div><div><div><div><div></div></div></div></div></div></div><div></div></div></div></div><div></div></div>"
+    }
+  },
+  {
+    "noteId": 1779335292756,
+    "modelName": "Pitch Type",
+    "tags": [],
+    "mod": 1779482835,
+    "fields": {
+      "Name": "Cutter",
+      "Category": "Fastball",
+      "Velocity": "~2–5 mph slower",
+      "Spin": "High",
+      "HandAtRelease": "Slight supination",
+      "Movement": "Small, late glove-side movement&nbsp;<br><img alt=\"cutter pitch diagram\" src=\"cutter.svg\">",
+      "Deception": "Looks like a fastball, breaks off the barrel",
+      "Extra": ""
+    }
+  },
+  {
+    "noteId": 1779335292763,
+    "modelName": "Pitch Type",
+    "tags": [],
+    "mod": 1779483488,
+    "fields": {
+      "Name": "Slider",
+      "Category": "Breaking ball",
+      "Velocity": "~6–12 mph slower",
+      "Spin": "High, tilted",
+      "HandAtRelease": "Hard supination<br><img src=\"paste-c8bff34eb6aa6c0f9c788587746ba7448b677608.jpg\">",
+      "Movement": "Glove-side sweep, some drop<br><img alt=\"slider pitch diagram\" src=\"slider.svg\">",
+      "Deception": "Spin-driven sharp break",
+      "Extra": ""
+    }
+  },
+  {
+    "noteId": 1779335292770,
+    "modelName": "Pitch Type",
+    "tags": [],
+    "mod": 1779382316,
+    "fields": {
+      "Name": "Sweeper",
+      "Category": "Breaking ball",
+      "Velocity": "~8–14 mph slower",
+      "Spin": "Very high, near-pure sidespin",
+      "HandAtRelease": "Hard supination",
+      "Movement": "Big horizontal glove-side movement",
+      "Deception": "Extreme lateral break",
+      "Extra": ""
+    }
+  },
+  {
+    "noteId": 1779335292777,
+    "modelName": "Pitch Type",
+    "tags": [],
+    "mod": 1779483469,
+    "fields": {
+      "Name": "Curveball",
+      "Category": "Breaking ball",
+      "Velocity": "~12–18 mph slower",
+      "Spin": "High topspin",
+      "HandAtRelease": "“On top,” pull-down<br><img src=\"paste-d93842e3fec9c5be213005eb9bf61b456db8747e.jpg\">",
+      "Movement": "Big downward (12 to 6 ) break<br><img alt=\"curveball pitch diagram\" src=\"curveball.svg\">",
+      "Deception": "Spin-driven loop, changes eye level",
+      "Extra": ""
+    }
+  },
+  {
+    "noteId": 1779335292784,
+    "modelName": "Pitch Type",
+    "tags": [
+      "potential_leech"
+    ],
+    "mod": 1779684208,
+    "fields": {
+      "Name": "Changeup",
+      "Category": "Offspeed",
+      "Velocity": "~8–12 mph slower",
+      "Spin": "Lower than fastball",
+      "HandAtRelease": "Early pronation<br><img src=\"paste-9e9ae0348004d285c437b9b7d6a16d7852854071.jpg\">",
+      "Movement": "Arm-side fade + drop<br><img alt=\"changeup pitch diagram\" src=\"changeup.svg\">",
+      "Deception": "Fastball look, velocity drop fools timing",
+      "Extra": ""
+    }
+  },
+  {
+    "noteId": 1779335292791,
+    "modelName": "Pitch Type",
+    "tags": [],
+    "mod": 1779483505,
+    "fields": {
+      "Name": "Splitter",
+      "Category": "Offspeed",
+      "Velocity": "~6–10 mph slower",
+      "Spin": "Very low (spin killed)",
+      "HandAtRelease": "Fastball action, ball wedged<br><img src=\"paste-726a8d4cbc2c8444703174829ca42d8309347c74.jpg\">",
+      "Movement": "Sharp late drop<br><img alt=\"splitter pitch diagram\" src=\"splitter.svg\">",
+      "Deception": "Fastball look, dives from low spin",
+      "Extra": ""
+    }
+  },
+  {
+    "noteId": 1779335292798,
+    "modelName": "Pitch Type",
+    "tags": [],
+    "mod": 1779483519,
+    "fields": {
+      "Name": "Forkball",
+      "Category": "Offspeed",
+      "Velocity": "~10–15 mph slower",
+      "Spin": "Very low (spin killed)",
+      "HandAtRelease": "Fastball action, ball jammed deeper<br><img src=\"paste-f6aa15517d9fb988386230e3b8824b1c3f64c36c.jpg\">",
+      "Movement": "Bigger, slower tumbling drop. Like a <a href=\"https://lokeshdhakar.com/baseball-pitches-illustrated/#splitter\">splitter</a>, but with a less dramatic, more gradual downward movement.<br><img alt=\"forkball pitch diagram\" src=\"forkball.svg\">",
+      "Deception": "Slower split, larger loop",
+      "Extra": ""
+    }
+  },
+  {
+    "noteId": 1779335292805,
+    "modelName": "Pitch Type",
+    "tags": [],
+    "mod": 1779483530,
+    "fields": {
+      "Name": "Knuckleball",
+      "Category": "Its own category",
+      "Velocity": "~25–40 mph slower (often ~65–75 mph)",
+      "Spin": "Near-zero — the goal is no spin",
+      "HandAtRelease": "Pushed off fingertips/nails, wrist stiff<br><img src=\"paste-0dc26c5832ceefa01b71fae0d44e7e2dac83f423.jpg\">",
+      "Movement": "Erratic, unpredictable flutter — different every pitch",
+      "Deception": "Chaotic movement no one can predict",
+      "Extra": ""
+    }
+  },
+  {
+    "noteId": 1779483116776,
+    "modelName": "Pitch Type+",
+    "tags": [],
+    "mod": 1779497940,
+    "fields": {
+      "Name": "Slurve",
+      "Category": "Breaking ball",
+      "Velocity": "~8–14 mph slower",
+      "Spin": "High, tilted",
+      "HandAtRelease": "Hard supination",
+      "Movement": "Glove-side sweep plus downward drop — between a slider and a curve<br><img alt=\"slurve pitch diagram\" src=\"slurve.svg\">",
+      "Deception": "Spin-driven break combining a slider's sweep with a curve's drop"
+    }
+  },
+  {
+    "noteId": 1779483116783,
+    "modelName": "Pitch Type+",
+    "tags": [],
+    "mod": 1779642674,
+    "fields": {
+      "Name": "Screwball",
+      "Category": "Breaking ball",
+      "Velocity": "~8–15 mph slower",
+      "Spin": "High; sidespin that runs arm-side, often with some topspin",
+      "HandAtRelease": "Extreme, deliberate pronation through release",
+      "Movement": "Arm-side break plus dramatic drop&nbsp;<br><img alt=\"screwball pitch diagram\" src=\"screwball.svg\">",
+      "Deception": "Spin-driven break that moves arm-side, the direction hitters rarely see"
+    }
+  }
+]
