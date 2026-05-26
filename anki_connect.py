@@ -153,3 +153,22 @@ def are_suspended(card_ids: list[int]) -> list[bool]:
     Order matches the input list.
     """
     return _invoke("areSuspended", cards=card_ids)
+
+
+def unsuspend_cards(card_ids: list[int]) -> None:
+    """Unsuspend the given cards."""
+    _invoke("unsuspend", cards=card_ids)
+
+
+# ---------------------------------------------------------------------------
+# Tags
+# ---------------------------------------------------------------------------
+
+def add_tags(note_ids: list[int], tags: str) -> None:
+    """Add space-separated tags to the given notes."""
+    _invoke("addTags", notes=note_ids, tags=tags)
+
+
+def remove_tags(note_ids: list[int], tags: str) -> None:
+    """Remove space-separated tags from the given notes."""
+    _invoke("removeTags", notes=note_ids, tags=tags)
