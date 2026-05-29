@@ -80,12 +80,22 @@ def _load() -> list[tuple[dict, list[dict]]]:
 # Display
 # ---------------------------------------------------------------------------
 
-def _fmt_card(card: dict) -> str:
+def _get_template_names(model_name: str) -> dict[int, str]:
+    """Return {ord: template_name} for a note type."""
+    try:
+        templates = ac.model_templates(model_name)
+        return {i: name for i, name in enumerate(templates.keys())}
+    except ac.AnkiConnectError:
+        return {}
+
+
+def _fmt_card(card: dict, template_name: str | None = None) -> str:
     queue_label = {-2: "suspended", -1: "buried", 0: "new",
                    1: "learning", 2: "review", 3: "relearning"}.get(card["queue"], str(card["queue"]))
     ease = card["factor"] / 10
+    tmpl = f"  [{template_name}]" if template_name else f"  ord={card['ord']}"
     return (
-        f"  card {card['cardId']}  ord={card['ord']}  "
+        f"  card {card['cardId']}{tmpl}  "
         f"lapses={card['lapses']}  reps={card['reps']}  "
         f"ease={ease:.0f}%  interval={card['interval']}d  [{queue_label}]"
     )
@@ -121,9 +131,10 @@ def show(index: int) -> None:
                 if line.strip():
                     print(f"    {line}")
 
+    template_names = _get_template_names(note["modelName"])
     print(f"\n  Cards ({len(cards)}):")
     for card in sorted(cards, key=lambda c: c["ord"]):
-        print(_fmt_card(card))
+        print(_fmt_card(card, template_names.get(card["ord"])))
     print()
 
 

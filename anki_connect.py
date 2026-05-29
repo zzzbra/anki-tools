@@ -73,6 +73,16 @@ def model_field_names(model_name: str) -> list[str]:
     return _invoke("modelFieldNames", modelName=model_name)
 
 
+def model_templates(model_name: str) -> dict[str, dict]:
+    """
+    Return the templates for a note type, keyed by template name.
+
+    Each value has "Front" and "Back" keys containing the raw template HTML.
+    The dict is ordered by template index (ord), so enumerate() gives ord.
+    """
+    return _invoke("modelTemplates", modelName=model_name)
+
+
 # ---------------------------------------------------------------------------
 # Notes
 # ---------------------------------------------------------------------------
