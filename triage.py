@@ -1,13 +1,17 @@
 """
 Leech triage tool.
 
-Surfaces suspended+leech-tagged notes one at a time with their card stats.
+Surfaces problem notes one at a time with their card stats.
 Designed for a three-way workflow: this script fetches and applies; the human
 and Claude diagnose and decide in conversation.
 
+Sources surfaced:
+  - Auto-leeches: suspended cards tagged Leech by Anki
+  - Marked cards: any card tagged `marked`, regardless of suspension status
+
 Library API (called from a Claude Code session via bash):
     import triage
-    triage.summary()          # how many leeches, breakdown by deck
+    triage.summary()          # how many notes, breakdown by deck and source
     triage.show(0)            # display note at index 0 (sorted worst-first)
     triage.edit(NOTE_ID, {"Front": "new text"})   # field edit with backup
     triage.unsuspend(NOTE_ID)                     # unsuspend all cards
@@ -24,7 +28,12 @@ import sys
 
 import anki_connect as ac
 
-LEECH_QUERY = "is:suspended tag:Leech"
+LEECH_QUERY  = "is:suspended tag:Leech"
+MARKED_QUERY = "tag:marked"
+
+# Set to a string prefix to highlight matching tags as a dedicated line in
+# show() output. Set to None to disable. Example: "todo:"
+TODO_PREFIX: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -46,14 +55,26 @@ def _plain(text: str) -> str:
 
 def _load() -> list[tuple[dict, list[dict]]]:
     """
-    Return list of (note, cards) for all suspended leech notes,
-    sorted by worst lapses descending, then lowest ease ascending.
+    Return list of (note, cards) for all notes needing triage, sorted
+    worst-first (lapses desc, ease asc). Each card dict has a `_sources`
+    key: a list containing "leech", "marked", or both.
     """
-    card_ids = ac.find_cards(LEECH_QUERY)
-    if not card_ids:
+    leech_ids  = set(ac.find_cards(LEECH_QUERY))
+    marked_ids = set(ac.find_cards(MARKED_QUERY))
+    all_ids    = leech_ids | marked_ids
+
+    if not all_ids:
         return []
 
-    cards = ac.cards_info(card_ids)
+    cards = ac.cards_info(list(all_ids))
+
+    for card in cards:
+        sources = []
+        if card["cardId"] in leech_ids:
+            sources.append("leech")
+        if card["cardId"] in marked_ids:
+            sources.append("marked")
+        card["_sources"] = sources
 
     note_to_cards: dict[int, list[dict]] = {}
     for card in cards:
@@ -70,7 +91,7 @@ def _load() -> list[tuple[dict, list[dict]]]:
     def sort_key(pair):
         _, note_cards = pair
         max_lapses = max(c["lapses"] for c in note_cards)
-        min_ease = min(c["factor"] for c in note_cards)
+        min_ease   = min(c["factor"] for c in note_cards)
         return (-max_lapses, min_ease)
 
     pairs.sort(key=sort_key)
@@ -93,20 +114,22 @@ def _get_template_names(model_name: str) -> dict[int, str]:
 def _fmt_card(card: dict, template_name: str | None = None) -> str:
     queue_label = {-2: "suspended", -1: "buried", 0: "new",
                    1: "learning", 2: "review", 3: "relearning"}.get(card["queue"], str(card["queue"]))
-    ease = card["factor"] / 10
-    tmpl = f"  [{template_name}]" if template_name else f"  ord={card['ord']}"
+    ease    = card["factor"] / 10
+    tmpl    = f"  [{template_name}]" if template_name else f"  ord={card['ord']}"
+    sources = card.get("_sources", [])
+    src_str = f"  ({', '.join(sources)})" if sources else ""
     return (
-        f"  card {card['cardId']}{tmpl}  "
+        f"  card {card['cardId']}{tmpl}{src_str}  "
         f"lapses={card['lapses']}  reps={card['reps']}  "
         f"ease={ease:.0f}%  interval={card['interval']}d  [{queue_label}]"
     )
 
 
 def show(index: int) -> None:
-    """Display the note at position `index` in the sorted leech list."""
+    """Display the note at position `index` in the sorted triage list."""
     pairs = _load()
     if not pairs:
-        print("No suspended leech notes found.")
+        print("No notes to triage.")
         return
     if index < 0 or index >= len(pairs):
         print(f"Index {index} out of range (0–{len(pairs)-1}).")
@@ -114,13 +137,17 @@ def show(index: int) -> None:
 
     note, cards = pairs[index]
     total = len(pairs)
-    deck = cards[0]["deckName"]
+    deck  = cards[0]["deckName"]
 
     print(f"\n{'='*64}")
     print(f"  [{index+1}/{total}]  {note['modelName']}")
     print(f"  deck:  {deck}")
     print(f"  note:  {note['noteId']}")
     print(f"  tags:  {', '.join(note['tags']) or '(none)'}")
+    if TODO_PREFIX:
+        prefixed = [t for t in note["tags"] if t.startswith(TODO_PREFIX)]
+        if prefixed:
+            print(f"  {TODO_PREFIX.rstrip(':')}:  {', '.join(prefixed)}")
     print(f"{'='*64}")
 
     for field_name, data in note["fields"].items():
@@ -140,20 +167,30 @@ def show(index: int) -> None:
 
 
 def summary() -> None:
-    """Print a count of leech notes broken down by deck."""
+    """Print a count of triage notes broken down by deck and source."""
     pairs = _load()
     if not pairs:
-        print("No suspended leech notes found.")
+        print("No notes to triage.")
         return
 
     from collections import Counter
     deck_counts: Counter = Counter()
+    source_counts: Counter = Counter()
+
     for note, cards in pairs:
         deck_counts[cards[0]["deckName"]] += 1
+        all_sources = {s for c in cards for s in c.get("_sources", [])}
+        for s in all_sources:
+            source_counts[s] += 1
 
-    print(f"\nSuspended leech notes: {len(pairs)} across {len(deck_counts)} deck(s)\n")
+    total = len(pairs)
+    print(f"\nNotes to triage: {total}\n")
+    print(f"  By source:")
+    for src, count in sorted(source_counts.items(), key=lambda x: -x[1]):
+        print(f"    {count:>4}  {src}")
+    print(f"\n  By deck:")
     for deck, count in sorted(deck_counts.items(), key=lambda x: -x[1]):
-        print(f"  {count:>4}  {deck}")
+        print(f"    {count:>4}  {deck}")
     print()
 
 
@@ -165,7 +202,6 @@ def _extract_fields(template_html: str) -> list[str]:
     """Return field names referenced in a template, in order of appearance."""
     seen = []
     for raw in re.findall(r"\{\{([^}]+)\}\}", template_html):
-        # Strip prefixes: edit:, #, /, ^, type:, hint:
         name = re.sub(r"^(edit:|type:|hint:|[#/^])", "", raw).strip()
         if name and name not in ("FrontSide",) and name not in seen:
             seen.append(name)
@@ -196,7 +232,7 @@ def edit(note_id: int, fields: dict[str, str]) -> None:
     Only the keys present in `fields` are changed.
     """
     current = ac.notes_info([note_id])[0]
-    backup = {name: data["value"] for name, data in current["fields"].items()}
+    backup  = {name: data["value"] for name, data in current["fields"].items()}
 
     print("Backup of current field values:")
     for name, value in backup.items():
@@ -211,7 +247,7 @@ def edit(note_id: int, fields: dict[str, str]) -> None:
 
 def unsuspend(note_id: int) -> None:
     """Unsuspend all cards belonging to this note."""
-    current = ac.notes_info([note_id])[0]
+    current  = ac.notes_info([note_id])[0]
     card_ids = current["cards"]
     ac.unsuspend_cards(card_ids)
     print(f"Unsuspended {len(card_ids)} card(s) for note {note_id}.")
@@ -234,12 +270,12 @@ def retag(note_id: int, *, remove: str = "", add: str = "") -> None:
 def _cli() -> None:
     pairs = _load()
     if not pairs:
-        print("No suspended leech notes found.")
+        print("No notes to triage.")
         return
 
     total = len(pairs)
     index = 0
-    print(f"\n{total} suspended leech notes. Commands: n(ext), p(rev), u(nsuspend), q(uit)")
+    print(f"\n{total} notes to triage. Commands: n(ext), p(rev), u(nsuspend), q(uit)")
     print("  edit <field>=<value>   — edit a single field")
     print("  retag -<tag> +<tag>    — remove/add tags (prefix with - or +)")
 
@@ -254,10 +290,9 @@ def _cli() -> None:
         if not raw:
             continue
 
-        note_id = pairs[index][0]["noteId"]
-        card_ids = [c["cardId"] for c in pairs[index][1]]
+        note_id  = pairs[index][0]["noteId"]
 
-        if raw in ("n", "next", ""):
+        if raw in ("n", "next"):
             index += 1
         elif raw in ("p", "prev"):
             index = max(0, index - 1)
@@ -276,7 +311,7 @@ def _cli() -> None:
         elif raw.startswith("retag "):
             parts = raw[6:].split()
             to_remove = " ".join(p[1:] for p in parts if p.startswith("-"))
-            to_add = " ".join(p[1:] for p in parts if p.startswith("+"))
+            to_add    = " ".join(p[1:] for p in parts if p.startswith("+"))
             retag(note_id, remove=to_remove, add=to_add)
         else:
             print("Unknown command.")

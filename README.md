@@ -21,15 +21,30 @@ This is a three-way process between **the human**, **an LLM**, and **Anki**:
 
 The script handles all I/O with Anki. The LLM and human handle all judgment. No action modifies Anki unless explicitly approved.
 
+### Triage sources
+
+Two sources are merged into a single queue:
+
+- **Auto-leeches** — cards Anki suspended automatically after hitting the leech
+  threshold (`is:suspended tag:Leech`). Anki identifies the note as problematic
+  but the specific failing card template may not be obvious.
+- **Marked cards** — any card tagged `marked`, regardless of suspension status
+  (`tag:marked`). These are cards the owner flagged manually during review,
+  often with card-level precision about what's wrong. Always surface marked
+  cards, even if not suspended.
+
+Each card in `show()` output displays its source — `(leech)`, `(marked)`, or
+`(leech, marked)` — so the origin of the problem is immediately visible.
+
 ### Starting a session
 
 ```
 python3 -c "import triage; triage.summary()"
 ```
 
-This prints a breakdown of all suspended leech notes by deck. Use it to orient at the start of a session.
+This prints a breakdown of all notes needing triage by source and deck. Use it to orient at the start of a session.
 
-Then ask the LLM: "Show me leech 0" (or whatever index you want to start from). Notes are sorted worst-first: most lapses descending, lowest ease ascending.
+Then ask the LLM: "Show me note 0" (or whatever index you want to start from). Notes are sorted worst-first: most lapses descending, lowest ease ascending.
 
 ---
 
