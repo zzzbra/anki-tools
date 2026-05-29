@@ -50,6 +50,22 @@ When a card is a leech, it usually violates one or more of these rules. The LLM 
 
 A card with 20+ lapses and ease below 150% has almost certainly violated Rule 4 or 11. Look for it.
 
+### Diagnose at the card level first
+
+A note can have multiple cards (one per template). Before diagnosing the note,
+check whether the lapses are spread across all cards or concentrated in one.
+
+- **One card is the culprit** — the note content may be fine; the problem is
+  with that specific prompt direction (e.g. Map → Country is hard while
+  Country → Capital is not a leech). The fix may be a mnemonic targeted at
+  that direction, or suspending just that card.
+- **All cards are failing equally** — the note itself is broken; the fix needs
+  to address the underlying content.
+
+`triage.show()` displays per-card stats. `triage.show_templates(model_name)`
+shows which fields appear on which card's front and back, useful for
+understanding what each direction is actually testing.
+
 ---
 
 ## `triage.py` — Library API
