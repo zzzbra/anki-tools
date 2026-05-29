@@ -12,6 +12,7 @@ Library API (called from a Claude Code session via bash):
     triage.edit(NOTE_ID, {"Front": "new text"})   # field edit with backup
     triage.unsuspend(NOTE_ID)                     # unsuspend all cards
     triage.retag(NOTE_ID, remove="Leech", add="leech-triaged")
+    triage.show_templates("My Note Type")  # which fields appear on which card
 
 Standalone CLI:
     python3 triage.py
@@ -153,6 +154,35 @@ def summary() -> None:
     print(f"\nSuspended leech notes: {len(pairs)} across {len(deck_counts)} deck(s)\n")
     for deck, count in sorted(deck_counts.items(), key=lambda x: -x[1]):
         print(f"  {count:>4}  {deck}")
+    print()
+
+
+# ---------------------------------------------------------------------------
+# Template inspection
+# ---------------------------------------------------------------------------
+
+def _extract_fields(template_html: str) -> list[str]:
+    """Return field names referenced in a template, in order of appearance."""
+    seen = []
+    for raw in re.findall(r"\{\{([^}]+)\}\}", template_html):
+        # Strip prefixes: edit:, #, /, ^, type:, hint:
+        name = re.sub(r"^(edit:|type:|hint:|[#/^])", "", raw).strip()
+        if name and name not in ("FrontSide",) and name not in seen:
+            seen.append(name)
+    return seen
+
+
+def show_templates(model_name: str) -> None:
+    """Print a clean summary of each template's front and back fields."""
+    templates = ac.model_templates(model_name)
+    print(f"\n{model_name}")
+    print("=" * len(model_name))
+    for name, tmpl in templates.items():
+        front_fields = _extract_fields(tmpl["Front"])
+        back_fields  = _extract_fields(tmpl["Back"])
+        print(f"\n  {name}")
+        print(f"    front: {', '.join(front_fields) or '—'}")
+        print(f"    back:  {', '.join(back_fields) or '—'}")
     print()
 
 
