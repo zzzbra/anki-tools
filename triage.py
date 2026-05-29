@@ -11,8 +11,9 @@ Sources surfaced:
 
 Library API (called from a Claude Code session via bash):
     import triage
-    triage.summary()          # how many notes, breakdown by deck and source
-    triage.show(0)            # display note at index 0 (sorted worst-first)
+    triage.summary()            # how many notes, breakdown by deck and source
+    triage.show_next()          # display the first note in the queue
+    triage.show(NOTE_ID)        # display a specific note by ID
     triage.edit(NOTE_ID, {"Front": "new text"})   # field edit with backup
     triage.unsuspend(NOTE_ID)                     # unsuspend all cards
     triage.retag(NOTE_ID, remove="Leech", add="leech-triaged")
@@ -32,7 +33,7 @@ LEECH_QUERY  = "is:suspended tag:Leech"
 MARKED_QUERY = "tag:marked"
 
 # Set to a string prefix to highlight matching tags as a dedicated line in
-# show() output. Set to None to disable. Example: "todo:"
+# show output. Set to None to disable. Example: "todo:"
 TODO_PREFIX: str | None = None
 
 
@@ -125,22 +126,13 @@ def _fmt_card(card: dict, template_name: str | None = None) -> str:
     )
 
 
-def show(index: int) -> None:
-    """Display the note at position `index` in the sorted triage list."""
-    pairs = _load()
-    if not pairs:
-        print("No notes to triage.")
-        return
-    if index < 0 or index >= len(pairs):
-        print(f"Index {index} out of range (0–{len(pairs)-1}).")
-        return
-
-    note, cards = pairs[index]
-    total = len(pairs)
-    deck  = cards[0]["deckName"]
+def _display(note: dict, cards: list[dict], position: int | None, total: int | None) -> None:
+    """Render a note to stdout. position/total are optional context."""
+    deck     = cards[0]["deckName"]
+    pos_str  = f"  [{position}/{total}]  " if position and total else "  "
 
     print(f"\n{'='*64}")
-    print(f"  [{index+1}/{total}]  {note['modelName']}")
+    print(f"{pos_str}{note['modelName']}")
     print(f"  deck:  {deck}")
     print(f"  note:  {note['noteId']}")
     print(f"  tags:  {', '.join(note['tags']) or '(none)'}")
@@ -166,6 +158,26 @@ def show(index: int) -> None:
     print()
 
 
+def show_next() -> None:
+    """Display the first note in the triage queue (always fresh from Anki)."""
+    pairs = _load()
+    if not pairs:
+        print("No notes to triage.")
+        return
+    note, cards = pairs[0]
+    _display(note, cards, position=1, total=len(pairs))
+
+
+def show(note_id: int) -> None:
+    """Display a specific note by ID, with its position in the current queue."""
+    pairs = _load()
+    for i, (note, cards) in enumerate(pairs):
+        if note["noteId"] == note_id:
+            _display(note, cards, position=i + 1, total=len(pairs))
+            return
+    print(f"Note {note_id} not found in triage queue.")
+
+
 def summary() -> None:
     """Print a count of triage notes broken down by deck and source."""
     pairs = _load()
@@ -174,7 +186,7 @@ def summary() -> None:
         return
 
     from collections import Counter
-    deck_counts: Counter = Counter()
+    deck_counts: Counter   = Counter()
     source_counts: Counter = Counter()
 
     for note, cards in pairs:
@@ -273,14 +285,21 @@ def _cli() -> None:
         print("No notes to triage.")
         return
 
-    total = len(pairs)
-    index = 0
+    # Load note IDs once; navigate by ID so mutations don't shift positions.
+    note_ids = [note["noteId"] for note, _ in pairs]
+    pair_map = {note["noteId"]: (note, cards) for note, cards in pairs}
+    total    = len(note_ids)
+    cursor   = 0
+
     print(f"\n{total} notes to triage. Commands: n(ext), p(rev), u(nsuspend), q(uit)")
     print("  edit <field>=<value>   — edit a single field")
     print("  retag -<tag> +<tag>    — remove/add tags (prefix with - or +)")
 
-    while 0 <= index < total:
-        show(index)
+    while 0 <= cursor < total:
+        note_id        = note_ids[cursor]
+        note, cards    = pair_map[note_id]
+        _display(note, cards, position=cursor + 1, total=total)
+
         try:
             raw = input(">>> ").strip()
         except (EOFError, KeyboardInterrupt):
@@ -290,15 +309,13 @@ def _cli() -> None:
         if not raw:
             continue
 
-        note_id  = pairs[index][0]["noteId"]
-
         if raw in ("n", "next"):
-            index += 1
+            cursor += 1
         elif raw in ("p", "prev"):
-            index = max(0, index - 1)
+            cursor = max(0, cursor - 1)
         elif raw in ("u", "unsuspend"):
             unsuspend(note_id)
-            index += 1
+            cursor += 1
         elif raw in ("q", "quit"):
             break
         elif raw.startswith("edit "):
@@ -309,7 +326,7 @@ def _cli() -> None:
             field, _, value = rest.partition("=")
             edit(note_id, {field.strip(): value.strip()})
         elif raw.startswith("retag "):
-            parts = raw[6:].split()
+            parts     = raw[6:].split()
             to_remove = " ".join(p[1:] for p in parts if p.startswith("-"))
             to_add    = " ".join(p[1:] for p in parts if p.startswith("+"))
             retag(note_id, remove=to_remove, add=to_add)
