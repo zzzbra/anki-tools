@@ -74,18 +74,18 @@ triage.show(index)
 
 ```
 ================================================================
-  [1/251]  Basic                          ← note type
-  deck:  🧠 Everything::🤓 Non-Language  ← deck path
-  note:  1538048906783                    ← note ID (use this for edits)
-  tags:  Leech, day, potential_leech
+  [1/42]  Basic                           ← note type
+  deck:  MyDecks::Example Deck           ← deck path
+  note:  1000000000001                   ← note ID (use this for edits)
+  tags:  Leech
 ================================================================
   Front:
-    What does 여행 mean?
+    What is the capital of Example Country?
   Back:
-    travel (旅行)
+    Example City
 
   Cards (1):
-  card 1538048918688  ord=0  lapses=32  reps=107  ease=130%  interval=1d  [suspended]
+  card 1000000000002  [Card 1]  lapses=12  reps=55  ease=149%  interval=1d  [suspended]
 ```
 
 Card stats:
@@ -106,21 +106,21 @@ triage.edit(note_id, fields)
 # Fetches current state first; prints backup before writing.
 #
 # Example:
-triage.edit(1538048906783, {"Front": "여행 (yeo-haeng)"})
+triage.edit(1000000000001, {"Front": "new question text"})
 
 triage.unsuspend(note_id)
 # Unsuspends all cards belonging to this note.
 # Use after reformulating a card — puts it back into the review queue.
 #
 # Example:
-triage.unsuspend(1538048906783)
+triage.unsuspend(1000000000001)
 
 triage.retag(note_id, remove="", add="")
 # Remove and/or add space-separated tags.
 # Common pattern after triage: remove "Leech", add "leech-triaged".
 #
 # Example:
-triage.retag(1538048906783, remove="Leech", add="leech-triaged")
+triage.retag(1000000000001, remove="Leech", add="leech-triaged")
 ```
 
 ### Typical action patterns
@@ -239,27 +239,24 @@ Note: `fields` values are `{"value": ..., "order": ...}` dicts, not plain string
 
 ## `reconcile.py` — Snapshot Script
 
-Snapshots the live state of the baseball pitch decks to `snapshots/`. Run after editing those cards in Anki to keep the repo in sync. The snapshots are the source of truth for those decks; the rest of the collection is managed through triage.
+Snapshots the live state of specific decks to `snapshots/`. Run after editing cards in Anki to keep the repo in sync. The snapshots are the source of truth for those decks; the rest of the collection is managed through triage.
 
 ```
 python3 reconcile.py
 ```
 
-Writes:
-- `snapshots/pitch_types.json` — all notes in `Baseball::Pitch Types`
-- `snapshots/pitching_concepts.json` — all notes in `Baseball::Pitching Concepts`
+Writes one JSON file per configured deck into `snapshots/`. Edit the `DECKS` dict at the top of `reconcile.py` to point at your own decks.
 
 Each note is stored as:
 ```json
 {
-  "noteId": 1779335292756,
-  "modelName": "Pitch Type",
+  "noteId": 1000000000001,
+  "modelName": "My Note Type",
   "tags": [],
-  "mod": 1779482835,
+  "mod": 1000000000,
   "fields": {
-    "Name": "Cutter",
-    "Category": "Fastball",
-    ...
+    "Front": "Question text",
+    "Back": "Answer text"
   }
 }
 ```
@@ -268,10 +265,3 @@ Field HTML is preserved as-is in snapshots (unlike the triage display, which str
 
 ---
 
-## Decks in scope
-
-| Deck | Note types | Notes |
-|------|-----------|-------|
-| `Baseball::Pitch Types` | Pitch Type (8 fields), Pitch Type+ (7 fields, no Extra) | 12 |
-| `Baseball::Pitching Concepts` | Basic++, Cloze, Cloze++ | 11 |
-| All decks | Any note tagged `Leech` + suspended | 251 (at last count) |
