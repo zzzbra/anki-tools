@@ -13,7 +13,7 @@ Local Python toolkit for managing an Anki collection programmatically via AnkiCo
 
 This is a three-way process between **the human**, **an LLM**, and **Anki**:
 
-1. The LLM calls `triage.show(N)` via a bash tool to fetch and display the Nth leech note from the live collection.
+1. The LLM calls `triage.show_next()` via a bash tool to fetch and display the first note in the triage queue from the live collection.
 2. The human and LLM examine the card together. The LLM diagnoses which SuperMemo formulation rule(s) the card may violate and proposes a reformulation.
 3. The human decides. They approve, modify, or reject the proposal.
 4. If approved, the LLM calls `triage.edit()`, `triage.unsuspend()`, or `triage.retag()` to apply the change directly to the live collection.
@@ -33,8 +33,9 @@ Two sources are merged into a single queue:
   often with card-level precision about what's wrong. Always surface marked
   cards, even if not suspended.
 
-Each card in `show()` output displays its source — `(leech)`, `(marked)`, or
-`(leech, marked)` — so the origin of the problem is immediately visible.
+Each card in `show_next()` / `show()` output displays its source — `(leech)`,
+`(marked)`, or `(leech, marked)` — so the origin of the problem is immediately
+visible.
 
 ### Starting a session
 
@@ -44,7 +45,7 @@ python3 -c "import triage; triage.summary()"
 
 This prints a breakdown of all notes needing triage by source and deck. Use it to orient at the start of a session.
 
-Then ask the LLM: "Show me note 0" (or whatever index you want to start from). Notes are sorted worst-first: most lapses descending, lowest ease ascending.
+Then ask the LLM: "Show me the next note." The LLM calls `triage.show_next()`, which always returns the first note in the current queue. As notes are triaged they drop out of the queue naturally, so `show_next()` always advances without needing an index. To revisit a specific note, use `triage.show(note_id)`.
 
 ---
 
@@ -77,7 +78,7 @@ check whether the lapses are spread across all cards or concentrated in one.
 - **All cards are failing equally** — the note itself is broken; the fix needs
   to address the underlying content.
 
-`triage.show()` displays per-card stats. `triage.show_templates(model_name)`
+`triage.show_next()` and `triage.show(note_id)` display per-card stats. `triage.show_templates(model_name)`
 shows which fields appear on which card's front and back, useful for
 understanding what each direction is actually testing.
 
@@ -93,15 +94,20 @@ All functions fetch fresh data from AnkiConnect on each call. No local state is 
 import triage
 
 triage.summary()
-# Prints: total suspended leech notes, count per deck.
+# Prints: total notes to triage, breakdown by source and deck.
 
-triage.show(index)
-# Prints: full note display for the note at position `index` in the
-# sorted leech list (0-based). Includes all fields (HTML stripped),
-# card stats, deck, note type, tags, and note ID.
+triage.show_next()
+# Fetches the current queue fresh and displays the first note.
+# This is the primary iteration call — as notes are triaged they drop
+# out of the queue, so show_next() always advances automatically.
+
+triage.show(note_id)
+# Fetches the queue fresh and displays the note matching note_id,
+# along with its current position in the queue. Use to revisit a
+# specific note by ID.
 ```
 
-**Reading the `show()` output:**
+**Reading the output:**
 
 ```
 ================================================================
@@ -170,7 +176,8 @@ triage.retag(NOTE_ID, remove="Leech", add="leech-retired")
 
 **Skip for now:**
 ```python
-# Just call triage.show(next_index) — no mutation needed.
+# Just call triage.show_next() again — no mutation needed.
+# The note stays in the queue and will reappear next session.
 ```
 
 ---
